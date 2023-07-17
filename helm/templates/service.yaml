@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cp-kafka-connect.fullname" . }}
+  labels:
+    {{- include "cp-kafka-connect.labels" . | nindent 4 }}
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: {{ .Values.targetPort }}
+  selector:
+    {{ include "cp-kafka-connect.selectorLabels" . }}
+  type: {{ .Values.serviceType }}

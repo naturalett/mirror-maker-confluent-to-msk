@@ -1,0 +1,60 @@
+{{- $shortenv := include "cp-kafka-connect.shortenv" . -}}
+{{- if .Capabilities.APIVersions.Has "apps/v1" }}
+apiVersion: apps/v1
+{{- else }}
+apiVersion: apps/v1beta2
+{{- end }}
+kind: Deployment
+metadata:
+  name: {{ include "cp-kafka-connect.fullname" . }}
+  labels:
+    {{- include "cp-kafka-connect.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas  | default "1"  }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "cp-kafka-connect.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "cp-kafka-connect.selectorLabels" . | nindent 8 }}
+    spec:
+      hostAliases:
+      - ip: "127.0.0.1"
+        hostnames:
+        - "kafka"
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: {{ include "cp-kafka-connect.fullname" . }}
+        image: naturalett/{{ include "cp-kafka-connect.imageName" . }}:{{ .Values.version }}
+        imagePullPolicy: Always
+        ports:
+          - name: kafka-connect
+            containerPort: {{ .Values.targetPort}}
+            protocol: TCP
+        # Hardware resources
+        resources:
+{{ toYaml (index .Values .Release.Name "resources") | indent 10 }}
+        env:
+          - name: CONNECT_REST_ADVERTISED_HOST_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          {{- range $key, $val := (index (index .Values "envVars" "all" )) | default dict }}
+          - name: {{ $key }}
+            value: {{ $val | quote}}
+          {{- end }}
+          {{- range $key, $val := (index (index .Values "envVars" $shortenv )) | default dict }}
+          - name: {{ $key }}
+            value: {{ $val | quote}}
+          {{- end }}
+          {{- range $key, $val := (index (index .Values .Release.Name) "envVars") | default dict }}
+          - name: {{ $key }}
+            value: {{ $val | quote}}
+          {{- end }}

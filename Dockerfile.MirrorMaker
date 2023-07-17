@@ -1,0 +1,32 @@
+FROM ubuntu:20.04
+ARG KAFKA_VERSION=3.5.0
+ARG SCALA_VERSION=2.12
+ARG BINARY_NAME="kafka_${SCALA_VERSION}-${KAFKA_VERSION}"
+ARG BINARY_TAR_NAME="${BINARY_NAME}.tgz"
+ARG KAFKA_URI="https://downloads.apache.org/kafka/$KAFKA_VERSION/$BINARY_TAR_NAME"
+
+# RUN apt-get update 
+RUN apt-get install -y wget openjdk-8-jdk vim
+
+RUN ["/bin/bash", "-c", "wget -nv $KAFKA_URI"]
+RUN mkdir -p /opt/kafka
+RUN tar xzf $BINARY_TAR_NAME -C /opt
+RUN mv /opt/$BINARY_NAME/* /opt/kafka
+COPY ./connect-mirror-maker.properties.tpl /opt/kafka/config
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre
+
+ARG CONFLUENT_BOOTSTRAP_SERVER_WITH_PORT
+ARG MSK_BOOTSTRAP_SERVER_WITH_PORT
+ARG WHITE_LIST_TOPICS=.*
+RUN sed -e "s/CONFLUENT_BOOTSTRAP_SERVER_WITH_PORT/$CONFLUENT_BOOTSTRAP_SERVER_WITH_PORT/g" \
+        -e "s/MSK_BOOTSTRAP_SERVER_WITH_PORT/$MSK_BOOTSTRAP_SERVER_WITH_PORT/g" \
+        -e "s/WHITE_LIST_TOPICS/$WHITE_LIST_TOPICS/g" \
+        -e "s/CONFLUENT_KEY/$CONFLUENT_KEY/g" \
+        -e "s/CONFLUENT_SECRET/$CONFLUENT_SECRET/g" \
+        /opt/kafka/config/connect-mirror-maker.properties.tpl > /opt/kafka/config/connect-mirror-maker.properties
+
+RUN curl -sSL https://github.com/aws/aws-msk-iam-auth/releases/download/v1.1.6/aws-msk-iam-auth-1.1.6-all.jar -o /opt/kafka/libs/aws-msk-iam-auth-1.1.6-all.jar
+RUN curl -sSL https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.19.0/jmx_prometheus_javaagent-0.19.0.jar -o /opt/kafka/libs/jmx_prometheus_javaagent-0.19.0.jar
+COPY ./kafka.yml /opt/kafka/config/kafka.yml
+
+ENTRYPOINT ["/bin/sh", "-c", "/opt/kafka/bin/connect-mirror-maker.sh /opt/kafka/config/connect-mirror-maker.properties"]

@@ -1,0 +1,40 @@
+version: latest
+shortenv: staging
+nameOverride: mirror-maker
+targetPort: 5558
+replicas: 1
+
+envVars:
+  all:
+    CONNECT_CONFLUENT_LICENSE: "<CONFLUENT LICENSE>"
+    CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+    CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+    CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+    CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+    KAFKA_OPTS: -javaagent:/opt/kafka/libs/jmx_prometheus_javaagent-0.19.0.jar=5558:/opt/kafka/config/kafka.yml
+  staging:
+    CONNECT_BOOTSTRAP_SERVERS: "<CONFLUENT URL WITH PORT>"
+    CONNECT_GROUP_ID: "mirror-maker"
+    CONNECT_CONFIG_STORAGE_TOPIC: docker-connect-configs
+    CONNECT_OFFSET_STORAGE_TOPIC: docker-connect-offsets
+    CONNECT_STATUS_STORAGE_TOPIC: docker-connect-status
+    CONNECT_REQUEST_TIMEOUT_MS: "20000"
+    CONNECT_RETRY_BACKOFF_MS: "500"
+    CONNECT_CONSUMER_REQUEST_TIMEOUT_MS: "20000"
+    CONNECT_CONSUMER_RETRY_BACKOFF_MS: "500"
+    CONNECT_PRODUCER_REQUEST_TIMEOUT_MS: "20000"
+    CONNECT_PRODUCER_RETRY_BACKOFF_MS: "500"
+    CONNECT_CONSUMER_MAX_POLL_RECORDS: "10000"
+    CONNECT_CONFIG_PROVIDERS_NI-SECRETS_PARAM.ENVIRONMENT: "staging"
+    KAFKA_HEAP_OPTS: "-Xms512M -Xmx4096M"
+
+mirror-maker:
+  resources:
+    requests:
+      cpu: "1"
+      memory: "2.5Gi"
+    limits:
+      cpu: "1.5"
+      memory: "3Gi"
+
+serviceType: "ClusterIP"
