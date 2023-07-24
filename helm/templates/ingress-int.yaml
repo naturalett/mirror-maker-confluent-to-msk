@@ -1,0 +1,30 @@
+{{- if eq (index .Values .Release.Name).ingress.enabled true }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "cp-kafka-connect.fullname" . }}
+  labels:
+    {{- include "cp-kafka-connect.labels" . | nindent 4 }}
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: {{ index (index .Values .Release.Name) "ingressClassName"  }}
+  rules:
+    - host: {{ include "cp-kafka-connect.fullname" . }}.example.com
+      http:
+        paths:
+          - backend:
+              service:
+                name:  {{ include "cp-kafka-connect.fullname" . }}
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
+          - backend:
+              service:
+                name:  {{ include "cp-kafka-connect.fullname" . }}
+                port:
+                  number: {{ .Values.jmx.port }}
+            path: /metrics
+            pathType: Prefix
+{{- end }}

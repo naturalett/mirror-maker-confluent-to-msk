@@ -9,6 +9,8 @@ spec:
   - name: http
     port: 80
     targetPort: {{ .Values.targetPort }}
+  - name: metrics
+    port: 5556
   selector:
     {{ include "cp-kafka-connect.selectorLabels" . }}
   type: {{ .Values.serviceType }}

@@ -58,3 +58,10 @@ spec:
           - name: {{ $key }}
             value: {{ $val | quote}}
           {{- end }}
+        volumeMounts:
+          - name: jmx-config
+            mountPath: /etc/jmx-kafka-connect
+      volumes:
+        - name: jmx-config
+          configMap:
+            name: {{ include "cp-kafka-connect.fullname" . }}-jmx-configmap

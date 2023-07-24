@@ -7,7 +7,7 @@ export CONFLUENT_SECRET=
 export MSK_CLUSTER_NAME=
 
 docker build \
--t naturalett/mirror-maker:97594d57 \
+-t naturalett/mirror-maker:v2 \
 --no-cache \
 --build-arg CONFLUENT_BOOTSTRAP_SERVER_WITH_PORT=$CONFLUENT_BOOTSTRAP_SERVER_WITH_PORT \
 --build-arg MSK_BOOTSTRAP_SERVER_WITH_PORT=$MSK_BOOTSTRAP_SERVER_WITH_PORT \
@@ -23,7 +23,7 @@ docker build \
 helm upgrade \
 -i mirror-maker \
 --cleanup-on-fail \
---set 'version=97594d57' \
+--set 'version=v2' \
 --namespace=default \
 -f helm/values.yaml \
 ./helm
