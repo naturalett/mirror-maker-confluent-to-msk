@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mirror-maker.fullname" . }}
+  labels:
+    {{- include "mirror-maker.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: {{ .Values.jmx.port }}
+      protocol: TCP
+      name: metricx
+  selector:
+    {{- include "mirror-maker.selectorLabels" . | nindent 4 }}

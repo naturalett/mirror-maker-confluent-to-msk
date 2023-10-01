@@ -1,0 +1,100 @@
+{{- $env := .Values.env -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mirror-maker.fullname" . }}
+  labels:
+    {{- include "mirror-maker.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "mirror-maker.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "mirror-maker.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+            - containerPort: {{ .Values.jmx.port }}
+              name: jmx
+          env:
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            {{- range $key, $val := (index (index .Values "envVars" "all" )) | default dict }}
+            - name: {{ $key }}
+              value: {{ $val | quote}}
+            {{- end }}
+            - name: DD_SERVICE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/service']
+          livenessProbe:
+            httpGet:
+              path: /connectors
+              port: 8083
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 300
+          readinessProbe:
+            httpGet:
+              path: /connectors
+              port: 8083
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 300
+          volumeMounts:
+            - name: {{ include "mirror-maker.fullname" . }}-jmx-configmap
+              mountPath: /etc/jmx-kafka-connect
+            - name: {{ include "mirror-maker.fullname" . }}-configmap
+              mountPath: /etc/connect-mirror-maker
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: {{ include "mirror-maker.fullname" . }}-jmx-configmap
+          configMap:
+            name: {{ include "mirror-maker.fullname" . }}-jmx-configmap
+        - name: {{ include "mirror-maker.fullname" . }}-configmap
+          configMap:
+            name: {{ include "mirror-maker.fullname" . }}-configmap

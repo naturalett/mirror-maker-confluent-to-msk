@@ -1,0 +1,37 @@
+{
+    "name": "events-staging",
+    "connector.class": "org.apache.kafka.connect.mirror.MirrorSourceConnector",
+    "clusters": "cfn-stg, us-east-2",
+    "source.cluster.alias": "events-staging",
+    "target.cluster.alias": "us-east-2",
+    
+    "source.cluster.bootstrap.servers": "<Confluent bootstrap:9092>",
+    "source.cluster.security.protocol": "SASL_SSL",
+    "source.cluster.sasl.mechanism" : "PLAIN",
+    "source.cluster.sasl.jaas.config" :"org.apache.kafka.common.security.plain.PlainLoginModule required username='<Confluent Key>' password='<Confluent Secret>';",
+
+    "target.cluster.bootstrap.servers": "<BROKER stg-ue2 1:9098>,<BROKER stg-ue2 2:9098>,<BROKER stg-ue2 3:9098>",
+    "target.cluster.sasl.client.callback.handler.class": "software.amazon.msk.auth.iam.IAMClientCallbackHandler",
+    "target.cluster.security.protocol": "SASL_SSL",
+    "target.cluster.sasl.mechanism" : "AWS_MSK_IAM",
+    "target.cluster.sasl.jaas.config" :"software.amazon.msk.auth.iam.IAMLoginModule required;",
+
+    "topics": "events-prod",
+    "replication.policy.class": "com.amazonaws.kafka.samples.CustomMM2ReplicationPolicy",  
+
+    "checkpoints.topic.replication.factor":"3",
+    "heartbeats.topic.replication.factor":"1",
+    "offset-syncs.topic.replication.factor":"3",
+    "tasks.max": "3",
+    "key.converter": "org.apache.kafka.connect.converters.ByteArrayConverter",
+    "value.converter": "org.apache.kafka.connect.converters.ByteArrayConverter",
+    "key.converter.schemas.enable": "false",
+    "replication.factor": "6",
+    "sync.topic.acls.interval.seconds": "30",
+    "sync.topic.configs.interval.seconds": "30",
+    "refresh.topics.interval.seconds": "30",
+    "refresh.groups.interval.seconds": "30",
+    "consumer.group.id": "events-staging",
+    "producer.enable.idempotence":"true",
+    "offset.storage.replication.factor":"1"
+}
