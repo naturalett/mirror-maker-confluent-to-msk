@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
     configs = get_environment_data(args.source_cluster, args.destination_cluster, args.environment)
     for config in configs:
-        host = f'mm2-{args.source_cluster}-to-{args.destination_cluster}.naturalint.com'
+        host = f'mm2-{args.source_cluster}-to-{args.destination_cluster}.example.com'
         logger.info(f"Put new config for hostname: {host}")
         try:
             push_config(host, config, config['name'])
