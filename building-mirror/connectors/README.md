@@ -1,18 +1,18 @@
 # Mirror Maker
 
 
-[Here, you'll find details regarding the properties of the initial mirror-maker](https://github.com/Natural-Intelligence/mirror-maker/blob/main/helm/templates/configmap.yaml)
+[Here, you'll find details regarding the properties of the initial mirror-maker](https://github.com/naturalett/mirror-maker-confluent-to-msk/blob/main/building-mirror/helm/templates/configmap.yaml)
 
 ### How does the push_configs.py work?
 The structure that we see in the current folder is:
 * staging
-  * xsitestg-ue2 -> **It presents the destination cluster**
+  * stg-ue2 -> **It presents the destination cluster**
     * cfnprod -> **the source cluster**
-    * ops-ue1 -> **the source cluster**
-    * xsitebos-ue1 -> **the source cluster**
+    * stg-ue1 -> **the source cluster**
+    * stg-ue1 -> **the source cluster**
 * production
-  * xsiterts-aps1 -> **It presents the destination cluster**
-    * xsitebos-ue1 -> **the source cluster**
+  * prod-aps1 -> **It presents the destination cluster**
+    * prod-ue1 -> **the source cluster**
 ---
 
 ##### Topic : [`offset.storage.topic=connect-offsets`](https://github.com/apache/kafka/blob/3.5.1/config/connect-distributed.properties#L43)
@@ -20,7 +20,7 @@ Topic to use for storing offsets. This topic should have many partitions and be 
 - *Expected action from the user:* Set a unique name
 
 
-**Important factor to notice: [`offset.storage.replication.factor`](https://github.com/apache/kafka/blob/3.5.1/config/connect-distributed.properties#L44C1-L44C36)** \
+**Important factor to notice: [`offset.storage.replication.factor`](https://github.com/apache/kafka/blob/3.5.1/config/connect-distributed.properties#L44C1-L44C36)**
 The replication factor used when Connect creates the topic used to store connector offsets. This should always be at least 3 for a production system.\
 - *Expected action from the user:* Set the replication factor to `3`
 
