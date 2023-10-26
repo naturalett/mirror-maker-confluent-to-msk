@@ -42,8 +42,8 @@ ENV PATH $M2:$PATH
 
 RUN git clone https://github.com/aws-samples/mirrormaker2-msk-migration.git
 WORKDIR mirrormaker2-msk-migration/CustomMM2ReplicationPolicy
-# COPY CustomMM2ReplicationPolicy.java ./CustomMM2ReplicationPolicy/src/main/java/com/amazonaws/kafka/samples/
-# COPY TestCustomMM2ReplicationPolicy.java ./CustomMM2ReplicationPolicy/src/test/java/com/amazonaws/kafka/samples/
+COPY CustomMM2ReplicationPolicy.java ./CustomMM2ReplicationPolicy/src/main/java/com/amazonaws/kafka/samples/
+COPY TestCustomMM2ReplicationPolicy.java ./CustomMM2ReplicationPolicy/src/test/java/com/amazonaws/kafka/samples/
 RUN mvn clean install
 RUN mv target/CustomMM2ReplicationPolicy-1.0-SNAPSHOT.jar /opt/kafka/libs/
 

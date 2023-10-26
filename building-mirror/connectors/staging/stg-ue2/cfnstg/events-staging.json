@@ -16,7 +16,7 @@
     "target.cluster.sasl.mechanism" : "AWS_MSK_IAM",
     "target.cluster.sasl.jaas.config" :"software.amazon.msk.auth.iam.IAMLoginModule required;",
 
-    "topics": "events-prod",
+    "topics": "events-staging",
     "replication.policy.class": "com.amazonaws.kafka.samples.CustomMM2ReplicationPolicy",
 
     "checkpoints.topic.replication.factor":"3",
